@@ -76,56 +76,39 @@ export default function Settings() {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
-  if (loading) return <p style={{ color: '#94a3b8' }}>Carregando configuracoes...</p>;
+  if (loading) return <p className="text-slate-400">Carregando configuracoes...</p>;
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-        <h2 style={{ margin: 0, color: '#f8fafc' }}>Configuracoes</h2>
-        <button onClick={loadSettings} style={btnStyle()}>Recarregar</button>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="m-0 text-lg font-semibold text-slate-100">Configuracoes</h2>
+        <button onClick={loadSettings} className="bg-blue-500 text-white border-none px-4 py-2 rounded cursor-pointer hover:bg-blue-600">Recarregar</button>
       </div>
 
       {toast && (
-        <div style={{
-          position: 'fixed',
-          top: '1rem',
-          right: '1rem',
-          padding: '0.75rem 1rem',
-          borderRadius: '0.5rem',
-          background: toast.type === 'error' ? '#ef4444' : '#22c55e',
-          color: '#fff',
-          fontWeight: '500',
-          zIndex: 1000,
-        }}>
+        <div className={`fixed top-4 right-4 px-4 py-3 rounded-lg text-white font-medium z-50 ${toast.type === 'error' ? 'bg-red-500' : 'bg-green-500'}`}>
           {toast.message}
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>
+      <div className="flex gap-2 mb-6 border-b border-slate-700 pb-2">
         {SETTINGS_TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            style={{
-              background: activeTab === tab.id ? '#3b82f6' : 'transparent',
-              color: activeTab === tab.id ? '#fff' : '#94a3b8',
-              border: 'none',
-              padding: '0.5rem 1rem',
-              borderRadius: '0.375rem',
-              cursor: 'pointer',
-            }}
+            className={`px-4 py-2 rounded border-none cursor-pointer ${activeTab === tab.id ? 'bg-blue-500 text-white' : 'bg-transparent text-slate-400 hover:text-slate-200'}`}
           >
             {tab.label}
           </button>
         ))}
       </div>
 
-      <div style={{ display: 'grid', gap: '1rem' }}>
+      <div className="flex flex-col gap-4">
         {SETTINGS_FIELDS[activeTab].map(field => (
-          <div key={field.key} style={fieldStyle()}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#94a3b8', fontSize: '0.875rem' }}>
+          <div key={field.key} className="bg-slate-800 p-4 rounded-lg border border-slate-700">
+            <label className="block mb-2 text-slate-400 text-sm">
               {field.label}
-              {field.required && <span style={{ color: '#ef4444', marginLeft: '0.25rem' }}>*</span>}
+              {field.required && <span className="text-red-400 ml-1">*</span>}
             </label>
             <input
               type={field.type === 'password' ? 'password' : 'text'}
@@ -133,7 +116,7 @@ export default function Settings() {
               onChange={e => handleChange(field.key, e.target.value)}
               onBlur={() => handleBlur(field.key, field)}
               placeholder={field.placeholder}
-              style={inputStyle()}
+              className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-200 text-sm outline-none focus:border-blue-500"
             />
           </div>
         ))}
@@ -141,30 +124,3 @@ export default function Settings() {
     </div>
   );
 }
-
-const btnStyle = () => ({
-  background: '#3b82f6',
-  color: '#fff',
-  border: 'none',
-  padding: '0.5rem 1rem',
-  borderRadius: '0.375rem',
-  cursor: 'pointer',
-});
-
-const fieldStyle = () => ({
-  background: '#1e293b',
-  padding: '1rem',
-  borderRadius: '0.5rem',
-  border: '1px solid #334155',
-});
-
-const inputStyle = () => ({
-  width: '100%',
-  background: '#0f172a',
-  border: '1px solid #334155',
-  borderRadius: '0.375rem',
-  padding: '0.5rem 0.75rem',
-  color: '#e2e8f0',
-  fontSize: '0.875rem',
-  outline: 'none',
-});
