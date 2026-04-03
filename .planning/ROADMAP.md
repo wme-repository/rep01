@@ -132,6 +132,24 @@ Plans:
 
 ---
 
+### Phase 7: Frontend Upgrade
+**Goal**: Dashboard moderna com formulário de configurações para variáveis de ambiente
+**Depends on**: Phase 6
+**Requirements**: FRONTEND-01, FRONTEND-02
+**Success Criteria** (what must be TRUE):
+  1. Dashboard com visual moderno (Tailwind CSS)
+  2. Formulário de configurações editing .env variables
+  3. Navegação com abas/rotas
+  4. Componentes acessíveis e responsivos
+
+**Plans**: 2 plans
+
+Plans:
+- [ ] 07-01: Modern UI with Tailwind CSS
+- [x] 07-02: Settings form for environment variables
+
+---
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -142,5 +160,6 @@ Plans:
 | 4. Core Pipeline | 5/5 | ✅ Complete | 2026-04-03 |
 | 5. RSS & Social | 2/2 | ✅ Complete | 2026-04-03 |
 | 6. Weekly Runner | 2/2 | ✅ Complete | 2026-04-03 |
+| 7. Frontend Upgrade | 1/2 | In Progress|  |
 
-**Total: 6 phases, 17 plans**
+**Total: 7 phases, 19 plans**

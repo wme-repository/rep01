@@ -24,6 +24,8 @@ Traceability matrix linking requirements to roadmap phases.
 | OPS-02 | Phase 3 | Pending |
 | OPS-03 | Phase 6 | Pending |
 | OPS-04 | Phase 1 | Pending |
+| FRONTEND-01 | Phase 7 | Pending |
+| FRONTEND-02 | Phase 7 | Complete |
 
 ## v1 Requirements
 
@@ -118,6 +120,21 @@ Traceability matrix linking requirements to roadmap phases.
   - Comando: run-weekly-social
   - Health check antes de executar
   - Status report ao final
+
+### Frontend
+
+- [ ] **FRONTEND-01**: Dashboard com visual moderno (Tailwind CSS)
+  - Upgrade de estilos inline para Tailwind CSS
+  - shadcn/ui components para acessibilidade
+  - Dark theme consistente
+  - Componentes responsivos
+
+- [x] **FRONTEND-02**: Formulário de configurações para variáveis de ambiente
+  - Editar URLs de concorrentes
+  - Editar API keys (Arvo, WordPress, Blotado)
+  - Categorização: Geral, Competidores, APIs
+  - Validação de inputs (URLs, tokens)
+  - Auto-save com feedback visual
 
 ## v2 Requirements (Deferred)
 
