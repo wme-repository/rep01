@@ -1,5 +1,10 @@
 # SEO Content Marketing Automation
 
+[![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8.svg)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Sistema autônomo de automação de SEO e marketing de conteúdo. Executa localmente via Claude Code.
 
 ## Stack
