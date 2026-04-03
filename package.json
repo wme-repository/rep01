@@ -1,0 +1,31 @@
+{
+  "name": "seo-ranker",
+  "version": "1.0.0",
+  "description": "SEO Content Marketing Automation - Autonomous agent",
+  "type": "module",
+  "main": "src/cli/index.js",
+  "scripts": {
+    "start": "node src/cli/index.js",
+    "analyze": "node src/cli/index.js analyze",
+    "plan": "node src/cli/index.js plan",
+    "generate": "node src/cli/index.js generate",
+    "publish": "node src/cli/index.js publish",
+    "social": "node src/cli/index.js social",
+    "run:weekly": "node src/cli/index.js run-weekly"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "dotenv": "^16.4.5",
+    "node-fetch": "^3.3.2",
+    "node-schedule": "^2.1.1",
+    "uuid": "^9.0.1",
+    "winston": "^3.13.1",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
