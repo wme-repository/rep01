@@ -1,0 +1,48 @@
+{
+  "voice": {
+    "description": "Tom e voz da marca para todos os conteúdos",
+    "values": {
+      "formality": "medium",
+      "style": "informative",
+      "perspective": "second-person",
+      "description": "Profissional mas acessível, como um especialista amigável"
+    }
+  },
+  "tone": {
+    "confident": 8,
+    "friendly": 7,
+    "professional": 8,
+    "empathetic": 6
+  },
+  "ctas": {
+    "default": "Fale com um especialista",
+    "blogPost": "Continue lendo",
+    "leadMagnet": "Baixe agora",
+    "consultation": "Agende uma consulta gratuita",
+    "products": "Veja nossos produtos"
+  },
+  "internalLinks": {
+    "homepage": "https://yoursite.com",
+    "about": "https://yoursite.com/sobre",
+    "contact": "https://yoursite.com/contato",
+    "blog": "https://yoursite.com/blog"
+  },
+  "prohibitedWords": [
+    "grátis grátis",
+    "oferta limitada",
+    "clique aqui",
+    "experimente agora mesmo",
+    "nunca mais",
+    "garantia incondicional"
+  ],
+  "articleStructure": {
+    "minWords": 1200,
+    "maxWords": 2500,
+    "requiredSections": ["introduction", "mainContent", "conclusion"],
+    "h2Count": { "min": 3, "max": 6 },
+    "h3Count": { "min": 2, "max": 8 },
+    "paragraphsPerSection": { "min": 2, "max": 5 },
+    "imagesMin": 1,
+    "imagesMax": 4
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "keywordDensity": {
+    "target": 1.5,
+    "min": 0.8,
+    "max": 3.0,
+    "note": "Percentage of words that should be the target keyword"
+  },
+  "linkRules": {
+    "internalPerArticle": { "min": 2, "max": 4 },
+    "externalPerArticle": { "min": 1, "max": 3 },
+    "maxLinksPerParagraph": 2
+  },
+  "topicRestrictions": {
+    "prohibited": [],
+    "restricted": [
+      { "topic": "politics", "allowedWithDiscretion": true },
+      { "topic": "religion", "allowedWithDiscretion": true }
+    ]
+  },
+  "readabilityTargets": {
+    "avgSentenceLength": { "min": 15, "max": 25 },
+    "avgParagraphLength": { "min": 3, "max": 6 },
+    "fleschReadingEase": { "min": 50, "max": 80 }
+  },
+  "structureRules": {
+    "introLength": { "min": 100, "max": 250 },
+    "conclusionLength": { "min": 100, "max": 200 },
+    "h2FirstParagraphOffset": true
+  }
+}

@@ -11,6 +11,7 @@ const commands = {
   'run-weekly': { desc: 'Execute weekly blog pipeline', module: './commands/run-weekly.js' },
   'read-rss': { desc: 'Read RSS feed and detect new posts', module: './commands/read-rss.js' },
   social: { desc: 'Generate and publish social media content', module: './commands/social.js' },
+  'brand-kit': { desc: 'Brand kit status and validation', module: './commands/brand-kit.js' },
   help: { desc: 'Show this help message', module: './commands/help.js' },
 };
 

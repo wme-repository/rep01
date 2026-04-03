@@ -1,0 +1,44 @@
+{
+  "voice": {
+    "description": "[DESCRIBE YOUR BRAND VOICE]",
+    "values": {
+      "formality": "[medium|formal|casual]",
+      "style": "[informative|persuasive|educational]",
+      "perspective": "[second-person|third-person]",
+      "description": "[1-2 sentence description of your brand voice]"
+    }
+  },
+  "tone": {
+    "confident": 8,
+    "friendly": 7,
+    "professional": 8,
+    "empathetic": 6
+  },
+  "ctas": {
+    "default": "[DEFAULT CTA TEXT]",
+    "blogPost": "[BLOG POST CTA]",
+    "leadMagnet": "[LEAD MAGNET CTA]",
+    "consultation": "[CONSULTATION CTA]",
+    "products": "[PRODUCTS CTA]"
+  },
+  "internalLinks": {
+    "homepage": "[https://yoursite.com]",
+    "about": "[https://yoursite.com/sobre]",
+    "contact": "[https://yoursite.com/contato]",
+    "blog": "[https://yoursite.com/blog]"
+  },
+  "prohibitedWords": [
+    "[WORD/PHRASE 1]",
+    "[WORD/PHRASE 2]"
+  ],
+  "articleStructure": {
+    "minWords": 1200,
+    "maxWords": 2500,
+    "requiredSections": ["introduction", "mainContent", "conclusion"],
+    "h2Count": { "min": 3, "max": 6 },
+    "h3Count": { "min": 2, "max": 8 },
+    "paragraphsPerSection": { "min": 2, "max": 5 },
+    "imagesMin": 1,
+    "imagesMax": 4
+  }
+}
