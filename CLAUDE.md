@@ -17,14 +17,14 @@ Sistema autônomo de automação de SEO e marketing de conteúdo. Executa localm
 ## Technology Stack
 
 **Core:** Node.js 20+, JavaScript/ES2022+
-**Dependencies:** node-fetch, xml2js, dotenv, chalk, node-schedule, winston, uuid
-**Dev:** nodemon
+**Dependencies:** node-fetch, xml2js, dotenv, chalk, node-schedule, winston, uuid, express, cors, react, react-dom
+**Dev:** nodemon, vite, @vitejs/plugin-react
 
 **Installation:**
 ```bash
 npm init -y
-npm install node-fetch xml2js dotenv chalk node-schedule winston uuid
-npm install -D nodemon
+npm install node-fetch xml2js dotenv chalk node-schedule winston uuid express cors react react-dom
+npm install -D nodemon vite @vitejs/plugin-react
 ```
 
 <!-- GSD:stack-end -->
@@ -53,7 +53,9 @@ seo-ranker/
 │   ├── core/          # Lógica de negócio
 │   ├── integrations/  # Arvo, WordPress, Blotado, RSS
 │   ├── services/      # Logger, queue, store
+│   ├── server/        # Express API server
 │   └── config/        # Env vars loader
+├── frontend/          # React dashboard (Vite)
 ├── plans/             # Planos de execução
 ├── context/           # Contexto persistente
 ├── logs/              # Logs operacionais
@@ -64,6 +66,11 @@ seo-ranker/
 **Pipelines:**
 1. Weekly Blog: Analyze → Plan → Generate → Publish
 2. Weekly Social: RSS → Detect new → Generate → Publish
+
+**Web Dashboard:**
+- API Server: `src/server/` (Express on port 3001)
+- Frontend: `frontend/` (Vite + React on port 5173)
+- Start: `npm run dashboard`
 
 <!-- GSD:architecture-end -->
 
