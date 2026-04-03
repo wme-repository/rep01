@@ -141,6 +141,6 @@ Plans:
 | 3. Operational Foundation | 3/3 | ✅ Complete | 2026-04-03 |
 | 4. Core Pipeline | 5/5 | ✅ Complete | 2026-04-03 |
 | 5. RSS & Social | 2/2 | ✅ Complete | 2026-04-03 |
-| 6. Weekly Runner | 0/2 | Not started | - |
+| 6. Weekly Runner | 2/2 | ✅ Complete | 2026-04-03 |
 
 **Total: 6 phases, 17 plans**
