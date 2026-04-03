@@ -24,7 +24,7 @@ Traceability matrix linking requirements to roadmap phases.
 | OPS-02 | Phase 3 | Pending |
 | OPS-03 | Phase 6 | Pending |
 | OPS-04 | Phase 1 | Pending |
-| FRONTEND-01 | Phase 7 | Pending |
+| FRONTEND-01 | Phase 7 | Complete |
 | FRONTEND-02 | Phase 7 | Complete |
 
 ## v1 Requirements
@@ -123,7 +123,7 @@ Traceability matrix linking requirements to roadmap phases.
 
 ### Frontend
 
-- [ ] **FRONTEND-01**: Dashboard com visual moderno (Tailwind CSS)
+- [x] **FRONTEND-01**: Dashboard com visual moderno (Tailwind CSS)
   - Upgrade de estilos inline para Tailwind CSS
   - shadcn/ui components para acessibilidade
   - Dark theme consistente
