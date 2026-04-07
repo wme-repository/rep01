@@ -8,6 +8,12 @@
 
 **Requirements:** FOUND-01, FOUND-02, FOUND-03, FOUND-04, FOUND-05, FOUND-06
 
+**Plans:** 2 plans
+
+**Plan list:**
+- [ ] 01-01-PLAN.md — Settings validation (FOUND-01) + token masking (FOUND-03)
+- [ ] 01-02-PLAN.md — Transport verification stdio (FOUND-05) + streamable-http (FOUND-06)
+
 **Success Criteria:**
 1. Todas variáveis de ambiente configuradas e validadas na inicialização
 2. Account não allowlisted retorna erro claro antes de chamar API
