@@ -2,73 +2,71 @@
 
 ## What This Is
 
-MCP server read-only para leitura de dados do Meta Ads (Facebook/Instagram). Permite consultar contas, campanhas, ad sets, anúncios e métricas via Meta Graph API. Execução via stdio (MCP CLI) ou HTTP.
+Read-only MCP server for Meta Ads (Facebook / Instagram). It exposes account, campaign, ad set, ad, and insights reads through the Meta Graph API over `stdio` or HTTP transport.
 
 ## Core Value
 
-Ferramentas de leitura do Meta Ads com segurança por allowlist e observabilidade de uso — sem qualquer capacidade de escrita.
+Low-risk read access to Meta Ads data with strict account allowlisting and basic observability, without any write capability.
 
 ## Requirements
 
-### Validated
+### Validated In Code
 
-- ✓ Scaffold MCP server com FastMCP — existente
-- ✓ 5 tools de leitura (get_ad_accounts, get_campaigns, get_adsets, get_ads, get_insights) — existente
-- ✓ Cliente Graph API com auth e appsecret_proof — existente
-- ✓ Allowlist de contas via META_ALLOWED_AD_ACCOUNTS — existente
-- ✓ Transport stdio e streamable-http — existente
+- FastMCP scaffold exists.
+- The server exposes 5 read tools: `get_ad_accounts`, `get_campaigns`, `get_adsets`, `get_ads`, `get_insights`.
+- Graph API auth and `appsecret_proof` support exist.
+- Account allowlist parsing and enforcement exist.
+- `stdio` and `streamable-http` transports are implemented.
+- Settings validation exists.
+- Sensitive token masking exists in server logging.
+- Retry with backoff exists in the HTTP client.
+- Structured JSON logging exists.
+- Pagination limit validation and `after` cursor support are standardized in the tools.
+- Invalid JSON payloads from successful HTTP responses are converted into structured errors.
 
 ### Active
 
-- [ ] Foundation: config via environment, validação de inputs, logging
-- [ ] Hardening: retries com backoff, paginação completa, testes unitários
-- [ ] UAT: validação com conta sandbox e real allowlisted
+- [ ] Observe the new GitHub Actions CI workflow and stabilize any failures.
+- [x] Validate retry and pagination behavior against the live Meta API.
+- [x] Execute `scripts/run_uat_smoke.py` with real credentials and IDs.
+- [x] UAT with a real allowlisted account.
+- [ ] Optional: repeat the same read-only UAT against a sandbox account.
 
 ### Out of Scope
 
-- Qualquer operação de escrita (criação, edição, pausa, ativação, exclusão) — v1 read-only
-- Upload de mídia — fora do escopo
-- Integração com Pipeboard — fora do escopo
-- Write operations de qualquer tipo — segurança-first por design
+- Any write operation against Meta Ads accounts.
+- Media upload.
+- Pipeboard integration.
+- Any tool that mutates campaign, ad set, ad, or account state.
 
 ## Context
 
-- Escopo travado em read-only desde o início
-- Baseado em análise de `pipeboard-co/meta-ads-mcp` como referência técnica
-- Não depende de Pipeboard — scaffold independente
-- Projeto já tem estrutura Python com pyproject.toml e 5 tools implementadas
+- The repository is past the initial scaffold stage but not yet production-ready.
+- The current working tree contains uncommitted hardening changes in `config.py`, `meta_api.py`, and `server.py`.
+- A GitHub Actions workflow now exists to run the unit tests on Python 3.10, 3.11, 3.12, and 3.14.
+- The local unit test suite passed on Python 3.14.3 using the installed interpreter at `C:\Users\wagne\AppData\Local\Python\bin\python.exe`.
+- Local transport smoke checks are now automated in the integration test suite.
+- Editable install and the packaged CLI entrypoint were validated in a local virtual environment.
+- A read-only UAT helper script exists for credentialed validation against the real Meta API.
+- A previous credentialed UAT attempt failed because the provided Meta token was tied to an application that Meta reports as deleted.
+- A subsequent credentialed UAT succeeded end-to-end against a real allowlisted account for account, campaign, ad set, ad, and insights reads.
+- The live UAT confirmed that ad set scoping on `get_ads` is working correctly after the edge-path fix.
+- Internal planning documents were previously inconsistent about completion state and were corrected on 2026-04-08.
+- The shell still does not resolve `python` by name, but the absolute interpreter path works.
 
 ## Constraints
 
-- **Tech stack**: Python 3.10+, httpx, mcp, python-dotenv
-- **Segurança**: Nunca escreve na conta Meta, token nunca logado completo
-- **Observabilidade**: Headers de usage da Meta são logados
+- Python 3.10+
+- `httpx`, `mcp`, `python-dotenv`
+- Read-only scope is non-negotiable for v1
+- Token values must never be logged in full
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Read-only por default | Minimizar risco de uso indevido | ✓ Good |
-| Allowlist de contas | Controle de acesso granular | ✓ Good |
-| Frozen dataclass para Settings | Imutabilidade previne bugs | ✓ Good |
-| stdio como transport default | Compatibilidade MCP CLI | ✓ Good |
-
----
-*Last updated: 2026-04-07 after codebase mapping*
-
-## Evolution
-
-This document evolves at phase transitions and milestone boundaries.
-
-**After each phase transition** (via `/gsd-transition`):
-1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
-3. New requirements emerged? → Add to Active
-4. Decisions to log? → Add to Key Decisions
-5. "What This Is" still accurate? → Update if drifted
-
-**After each milestone** (via `/gsd-complete-milestone`):
-1. Full review of all sections
-2. Core Value check — still the right priority?
-3. Audit Out of Scope — reasons still valid?
-4. Update Context with current state
+| Read-only by default | Minimize misuse risk | Kept |
+| Allowlist by ad account | Bound access to approved accounts | Kept |
+| Lazy runtime bootstrap | Avoid crashing imports and improve testability | Implemented |
+| Ownership checks for nested IDs | Prevent campaign/adset/ad based allowlist bypass | Implemented |
+| JSON logs by default | Favor machine-readable observability in server environments | Implemented |

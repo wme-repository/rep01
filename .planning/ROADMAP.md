@@ -1,69 +1,89 @@
 # Roadmap: Meta Ads MCP Read-Only
 
-**3 phases** | **16 requirements** | All v1 requirements covered ✓
+**3 phases** | **v1 still in progress**
 
 ## Phase 1: Foundation
 
-**Goal:** Completar configuracao e hardening inicial do scaffold existente
+**Goal:** Finish safe runtime bootstrap for the existing scaffold.
 
-**Requirements:** FOUND-01, FOUND-02, FOUND-03, FOUND-04, FOUND-05, FOUND-06
+**Current status:** Implemented and locally smoke-tested.
 
-**Plans:** 2 plans
+**Implemented**
 
-**Plan list:**
-- [ ] 01-01-PLAN.md — Settings validation (FOUND-01) + token masking (FOUND-03)
-- [ ] 01-02-PLAN.md — Transport verification stdio (FOUND-05) + streamable-http (FOUND-06)
+- Environment-driven settings loader
+- Settings validation
+- Token masking filter
+- Read-only FastMCP server with 5 tools
+- `stdio` and `streamable-http` transport wiring
 
-**Success Criteria:**
-1. Todas variáveis de ambiente configuradas e validadas na inicialização
-2. Account não allowlisted retorna erro claro antes de chamar API
-3. Logs nunca contêm token completo
-4. Headers de usage da Meta são logados via logger.info()
-5. Transport stdio funciona com `meta-ads-mcp-readonly --transport stdio`
-6. Transport HTTP funciona com `meta-ads-mcp-readonly --transport streamable-http --host localhost --port 8080`
+**Still pending**
+
+1. Confirm operational logging behavior end-to-end in CI environments
 
 ---
 
 ## Phase 2: Hardening
 
-**Goal:** Resiliência de produção e testes
+**Goal:** Production resilience and confidence.
 
-**Requirements:** HARD-01, HARD-02, HARD-03, HARD-04, HARD-05, HARD-06
+**Implemented**
 
-**Success Criteria:**
-1. Retry automático com backoff exponencial em HTTP 429 e 5xx
-2. Pagination cursor-based implementada em todas as tools
-3. Testes unitários para config.py cobrem normalization e allowlist parsing
-4. Testes unitários para meta_api.py cobrem allowlist enforcement
-5. Testes unitários para server.py com mocks — 5 tools testadas
-6. Logs em formato JSONStructured para produção
+- Ownership checks for campaign, ad set, and ad level access before protected reads
+- Retry with exponential backoff for 429 / 5xx and transient request failures
+- Structured JSON logging by default
+- Standardized `limit` validation and `after` cursor support across paginated tools
+- Initial `unittest` suite for config, API helpers, and server tool behavior
+- GitHub Actions CI workflow for automated test execution across supported Python versions
+- Local test execution succeeded on Python 3.14.3
+- Local transport smoke checks are covered by automated integration tests
+- Editable install and packaged CLI entrypoint validation succeeded in a local virtual environment
+- Read-only UAT runner prepared for credentialed execution against Meta
+- Full read-only UAT succeeded against a real allowlisted account
+- Live validation confirmed account, campaign, ad set, ad, and insights reads
+- Live validation confirmed ad set-scoped `get_ads` behavior
+
+**Still pending**
+
+1. Observe and stabilize the CI workflow if any test failures appear
+2. Optionally repeat the same read-only UAT against a sandbox account
 
 ---
 
 ## Phase 3: UAT
 
-**Goal:** Validação real com contas
+**Goal:** Validate real-world behavior with approved accounts.
 
-**Requirements:** UAT-01, UAT-02, UAT-03, UAT-04
+**Implemented**
 
-**Success Criteria:**
-1. get_ad_accounts retorna contas sandbox
-2. get_campaigns, get_adsets, get_ads retornam dados corretos
-3. get_insights retorna métricas (impressions, reach, spend)
-4. Account não allowlisted recebe erro: "account_id X is not allowlisted in META_ALLOWED_AD_ACCOUNTS"
-5. Headers de usage são visíveis nos logs
+- Real allowlisted account validation
+- Log verification for Meta usage headers during live reads
+- Insights reads validated at account, campaign, ad set, and ad levels
+
+**Still pending**
+
+1. Sandbox account validation
+2. Insights field review for useful defaults and filters
 
 ---
 
 ## Milestone v1
 
-**Complete:** 3 phases delivered, 16 requirements verified
+**Status:** Not complete
 
-**What we shipped:**
-- MCP server read-only com 5 tools
-- Allowlist de segurança
-- Transport stdio e HTTP
-- Testes unitários
-- Retry com backoff
-- Paginacao completa
-- Logs estruturados
+**Already delivered in code**
+
+- Read-only MCP server
+- 5 core read tools
+- Basic allowlist enforcement
+- Runtime settings validation
+- Token masking
+- Ownership checks to reduce allowlist bypass risk
+- Retry/backoff
+- Structured JSON logging
+- Pagination guardrails
+- Initial unit test scaffolding
+
+**Required before calling v1 complete**
+
+- Observed CI passing on supported Python versions
+- Optional sandbox-account UAT if that environment matters for release
