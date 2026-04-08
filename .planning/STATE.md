@@ -5,7 +5,7 @@
 See: `.planning/PROJECT.md`
 
 **Core value:** Read-only access to Meta Ads data with allowlist enforcement and observable API usage.
-**Current phase:** Phase 3 - UAT validated on a real allowlisted account.
+**Current phase:** Phase 3 - UAT validated locally and awaiting first remote CI run.
 
 ## Phase Status
 
@@ -38,8 +38,8 @@ See: `.planning/PROJECT.md`
 
 ## Next Recommended Action
 
-- Observe the CI workflow on Python 3.10, 3.11, 3.12, and 3.14.
-- Decide whether to close the milestone as v1-complete or keep one more pass for documentation polish.
+- Configure a remote and push the current commit to trigger CI on Python 3.10, 3.11, 3.12, and 3.14.
+- Close the milestone as v1-complete if CI passes.
 
 ## Last Updated
 

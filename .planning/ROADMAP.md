@@ -1,6 +1,6 @@
 # Roadmap: Meta Ads MCP Read-Only
 
-**3 phases** | **v1 still in progress**
+**3 phases** | **v1 code-complete locally, awaiting first CI run after push**
 
 ## Phase 1: Foundation
 
@@ -68,7 +68,7 @@
 
 ## Milestone v1
 
-**Status:** Not complete
+**Status:** Code-complete locally, pending first CI run after push
 
 **Already delivered in code**
 

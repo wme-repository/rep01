@@ -44,6 +44,12 @@ Fica explicitamente fora do v1:
 - Leituras validadas em nivel de conta, campanha, conjunto, anuncio e insights.
 - URLs de paginacao retornam `access_token=[REDACTED]`.
 
+## Release Readiness
+
+- Estado local: pronto para primeiro push.
+- Proximo gate externo: executar CI em `.github/workflows/ci.yml`.
+- Artefatos de release: `pyproject.toml` em `0.1.0` e `CHANGELOG.md` atualizado.
+
 ## Variaveis de ambiente
 
 Copie `.env.example` para `.env` e preencha:
