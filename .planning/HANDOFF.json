@@ -1,0 +1,89 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-04-08T19:50:40.8117040-03:00",
+  "phase": "3",
+  "phase_name": "uat-and-release-handoff",
+  "phase_dir": ".planning",
+  "plan": 0,
+  "task": 0,
+  "total_tasks": 0,
+  "status": "paused",
+  "completed_tasks": [
+    {
+      "id": 1,
+      "name": "Harden read-only Meta MCP server and client",
+      "status": "done",
+      "commit": "6e09b9f"
+    },
+    {
+      "id": 2,
+      "name": "Validate local tests, transport smoke checks, packaging, and live read-only UAT",
+      "status": "done",
+      "commit": "6e09b9f"
+    },
+    {
+      "id": 3,
+      "name": "Publish release handoff docs and push code to remote branch",
+      "status": "done",
+      "commit": "955bf49"
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": 1,
+      "name": "Observe GitHub Actions for origin/meta-ads-mcp-readonly",
+      "status": "not_started"
+    },
+    {
+      "id": 2,
+      "name": "Decide whether this branch remains in rep01 or moves to a dedicated repository",
+      "status": "not_started"
+    }
+  ],
+  "blockers": [
+    {
+      "description": "Remote main belongs to an unrelated project (seo-ranker), so merging this branch into origin/main would be unsafe without an explicit repository strategy decision.",
+      "type": "human_action",
+      "workaround": "Keep working on origin/meta-ads-mcp-readonly or move the code to a dedicated repository before opening any merge flow."
+    },
+    {
+      "description": "GitHub CLI is not authenticated in this shell, so CI must be checked in the GitHub web UI or after re-authenticating gh.",
+      "type": "human_action",
+      "workaround": "Inspect Actions in the browser or run gh auth login before trying GitHub CLI operations."
+    }
+  ],
+  "human_actions_pending": [
+    {
+      "action": "Check the GitHub Actions run triggered by the push to origin/meta-ads-mcp-readonly.",
+      "context": "The code is locally validated, but the first external CI run still needs to be observed.",
+      "blocking": true
+    },
+    {
+      "action": "Choose the remote strategy for this project.",
+      "context": "rep01/main is another project, so this code currently lives on a separate branch only.",
+      "blocking": true
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Keep the product strictly read-only during all live validation.",
+      "rationale": "This project is scoped as low-risk Meta Ads data access and must not mutate account state.",
+      "phase": "3"
+    },
+    {
+      "decision": "Push to origin/meta-ads-mcp-readonly instead of origin/main.",
+      "rationale": "The remote main branch has unrelated history and content, so preserving it avoids destructive publication mistakes.",
+      "phase": "3"
+    },
+    {
+      "decision": "Exclude .claude/settings.local.json from commits and pushes.",
+      "rationale": "It is local user configuration, not project source.",
+      "phase": "3"
+    }
+  ],
+  "uncommitted_files": [
+    ".claude/settings.local.json"
+  ],
+  "next_action": "Start by checking the Actions run for branch meta-ads-mcp-readonly in https://github.com/wme-repository/rep01 and then decide whether to keep this project in that repo or move it to a dedicated repository.",
+  "context_notes": "Code is code-complete locally. Local validation includes 33 passing tests, transport smoke checks, editable install plus console entrypoint validation, and live read-only UAT against a real allowlisted Meta account. Two project commits are published remotely on branch origin/meta-ads-mcp-readonly: 6e09b9f and 955bf49. Avoid attempting a PR into origin/main without first resolving repository strategy because origin/main is an unrelated seo-ranker project."
+}
