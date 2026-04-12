@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import hashlib
-import hmac
 import json
 import logging
 import re
@@ -15,6 +13,7 @@ from .config import Settings, normalize_ad_account_id
 
 logger = logging.getLogger(__name__)
 ACCESS_TOKEN_URL_PATTERN = re.compile(r"([?&]access_token=)[^&]+")
+APPSECRET_PROOF_URL_PATTERN = re.compile(r"([?&]appsecret_proof=)[^&]+")
 
 
 def ensure_allowed_account(settings: Settings, account_id: str) -> str:
@@ -104,14 +103,7 @@ class GraphApiClient:
         await asyncio.sleep(delay_seconds)
 
     def _build_appsecret_proof(self) -> str | None:
-        if not self.settings.meta_app_secret or not self.settings.meta_access_token:
-            return None
-
-        return hmac.new(
-            self.settings.meta_app_secret.encode("utf-8"),
-            self.settings.meta_access_token.encode("utf-8"),
-            hashlib.sha256,
-        ).hexdigest()
+        return self.settings.build_appsecret_proof()
 
     def _base_params(self) -> dict[str, Any]:
         params: dict[str, Any] = {"access_token": self.settings.meta_access_token}
@@ -166,11 +158,15 @@ class GraphApiClient:
 
     def _sanitize_string(self, value: str) -> str:
         sanitized = ACCESS_TOKEN_URL_PATTERN.sub(r"\1[REDACTED]", value)
+        sanitized = APPSECRET_PROOF_URL_PATTERN.sub(r"\1[REDACTED]", sanitized)
         if self.settings.meta_access_token:
             sanitized = sanitized.replace(
                 self.settings.meta_access_token,
                 "[REDACTED]",
             )
+        appsecret_proof = self.settings.build_appsecret_proof()
+        if appsecret_proof:
+            sanitized = sanitized.replace(appsecret_proof, "[REDACTED]")
         return sanitized
 
     def _sanitize_payload(self, value: Any) -> Any:

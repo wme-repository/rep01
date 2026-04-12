@@ -23,8 +23,12 @@ Fica explicitamente fora do v1:
 
 - O servidor registra apenas tools de leitura.
 - O token nunca e logado por completo.
+- `appsecret_proof` tambem e redigido em logs, erros e URLs sanitizadas.
 - `appsecret_proof` e usado quando `META_APP_SECRET` estiver configurado.
-- Existe allowlist de contas por `META_ALLOWED_AD_ACCOUNTS`.
+- `META_ALLOWED_AD_ACCOUNTS` e obrigatorio por default.
+- Qualquer uso sem allowlist exige `META_UNSAFE_ALLOW_ALL_AD_ACCOUNTS=true`.
+- `streamable-http` exige `META_HTTP_BEARER_TOKEN` por default.
+- O unico bypass sem auth HTTP e `META_UNSAFE_ALLOW_UNAUTHENTICATED_HTTP=true` com host loopback.
 - O codigo coleta headers de uso da Meta para observabilidade.
 - IDs de campanha, ad set e ad sao verificados contra a conta allowlisted antes de consultas derivadas.
 
@@ -37,12 +41,9 @@ Fica explicitamente fora do v1:
 
 ## Status de Validacao
 
-- Suite local passando com `33` testes.
-- Smoke tests locais validados para `stdio` e `streamable-http`.
-- Instalacao editavel validada em venv local com entrypoint `meta-ads-mcp-readonly`.
-- UAT real concluida em modo somente leitura com conta allowlisted.
-- Leituras validadas em nivel de conta, campanha, conjunto, anuncio e insights.
-- URLs de paginacao retornam `access_token=[REDACTED]`.
+- Historico anterior do repo: suite local validada antes deste hardening.
+- Este pass adiciona novos gates de config, auth HTTP e redacao de `appsecret_proof`.
+- Apos este ajuste, a suite local e a CI devem ser rerodadas antes do proximo release.
 
 ## Release Readiness
 
@@ -58,10 +59,13 @@ Copie `.env.example` para `.env` e preencha:
 - `META_APP_SECRET`: opcional, recomendado para chamadas server-to-server
 - `META_API_VERSION`: padrao `v24.0`
 - `META_ALLOWED_AD_ACCOUNTS`: contas permitidas, separadas por virgula
+- `META_UNSAFE_ALLOW_ALL_AD_ACCOUNTS`: libera startup sem allowlist de forma explicita
 - `META_REQUEST_TIMEOUT_SECONDS`: timeout HTTP
 - `META_MAX_RETRIES`: quantidade maxima de retries automaticos
 - `META_RETRY_BACKOFF_SECONDS`: base do backoff exponencial em segundos
 - `META_LOG_FORMAT`: `json` ou `plain`
+- `META_HTTP_BEARER_TOKEN`: bearer token exigido no `streamable-http`
+- `META_UNSAFE_ALLOW_UNAUTHENTICATED_HTTP`: bypass explicito apenas para `localhost`
 
 ## Paginacao
 
@@ -82,6 +86,9 @@ Para HTTP:
 ```bash
 meta-ads-mcp-readonly --transport streamable-http --host localhost --port 8080
 ```
+
+Por default, envie `Authorization: Bearer <META_HTTP_BEARER_TOKEN>` nas requests HTTP.
+O endpoint MCP fica sob o path padrao do FastMCP, tipicamente `http://localhost:8080/mcp`.
 
 ## Testes
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import asynccontextmanager
+import hmac
 import json
 import logging
 import re
@@ -8,6 +10,13 @@ from typing import Any
 
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
+from starlette.applications import Starlette
+from starlette.middleware import Middleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import JSONResponse
+from starlette.routing import Mount
+import uvicorn
 
 from .config import Settings
 from .meta_api import (
@@ -26,6 +35,7 @@ _settings: Settings | None = None
 _client: GraphApiClient | None = None
 _sensitive_filter: "SensitiveValueFilter | None" = None
 MAX_PAGE_LIMIT = 500
+LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
 _STANDARD_LOG_RECORD_KEYS = {
     "args",
     "asctime",
@@ -51,6 +61,22 @@ _STANDARD_LOG_RECORD_KEYS = {
     "threadName",
     "taskName",
 }
+
+
+class BearerTokenAuthMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app: Any, bearer_token: str):
+        super().__init__(app)
+        self._expected_header = f"Bearer {bearer_token}"
+
+    async def dispatch(self, request: Request, call_next: Any) -> Any:
+        authorization = request.headers.get("authorization", "")
+        if not hmac.compare_digest(authorization, self._expected_header):
+            return JSONResponse(
+                {"error": {"message": "Missing or invalid bearer token"}},
+                status_code=401,
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return await call_next(request)
 
 
 class JsonLogFormatter(logging.Formatter):
@@ -152,9 +178,14 @@ def configure_logging(settings: Settings) -> None:
     if not settings.meta_access_token:
         return
 
+    sensitive_values = {"access_token": settings.meta_access_token}
+    appsecret_proof = settings.build_appsecret_proof()
+    if appsecret_proof:
+        sensitive_values["appsecret_proof"] = appsecret_proof
+
     _sensitive_filter = SensitiveValueFilter(
         "sensitive_filter",
-        {"access_token": settings.meta_access_token},
+        sensitive_values,
     )
     for logger in _iter_all_loggers():
         logger.addFilter(_sensitive_filter)
@@ -192,11 +223,60 @@ def reset_runtime_state() -> None:
             meta_app_secret="",
             meta_api_version="v24.0",
             allowed_ad_accounts=(),
+            unsafe_allow_all_ad_accounts=False,
             request_timeout_seconds=30.0,
             max_retries=2,
             retry_backoff_seconds=1.0,
             log_format="json",
+            http_bearer_token="",
+            unsafe_allow_unauthenticated_http=False,
         )
+    )
+
+
+def is_loopback_host(host: str) -> bool:
+    return str(host or "").strip().lower() in LOOPBACK_HOSTS
+
+
+def validate_streamable_http_settings(settings: Settings, host: str) -> None:
+    if settings.http_bearer_token:
+        return
+
+    if settings.unsafe_allow_unauthenticated_http:
+        if not is_loopback_host(host):
+            raise ValueError(
+                "META_UNSAFE_ALLOW_UNAUTHENTICATED_HTTP=true is only allowed "
+                "with localhost, 127.0.0.1, or ::1"
+            )
+        return
+
+    raise ValueError(
+        "META_HTTP_BEARER_TOKEN is required for streamable-http. "
+        "Use META_UNSAFE_ALLOW_UNAUTHENTICATED_HTTP=true only for explicit "
+        "localhost-only testing."
+    )
+
+
+@asynccontextmanager
+async def mcp_http_lifespan(_: Starlette) -> Any:
+    async with mcp.session_manager.run():
+        yield
+
+
+def create_streamable_http_app(settings: Settings) -> Starlette:
+    middleware: list[Middleware] = []
+    if settings.http_bearer_token:
+        middleware.append(
+            Middleware(
+                BearerTokenAuthMiddleware,
+                bearer_token=settings.http_bearer_token,
+            )
+        )
+
+    return Starlette(
+        routes=[Mount("/", app=mcp.streamable_http_app())],
+        middleware=middleware,
+        lifespan=mcp_http_lifespan,
     )
 
 
@@ -483,19 +563,26 @@ def main() -> None:
     )
 
     if args.transport == "streamable-http":
+        validate_streamable_http_settings(settings, args.host)
         mcp.settings.host = args.host
         mcp.settings.port = args.port
         mcp.settings.stateless_http = True
         mcp.settings.json_response = True
+        app = create_streamable_http_app(settings)
         logger.info(
             "server_http_ready",
             extra={
                 "event": "server_http_ready",
                 "host": args.host,
                 "port": args.port,
+                "auth_mode": (
+                    "bearer"
+                    if settings.http_bearer_token
+                    else "unauthenticated-localhost-override"
+                ),
             },
         )
-        mcp.run(transport="streamable-http")
+        uvicorn.run(app, host=args.host, port=args.port)
         return
 
     mcp.run(transport="stdio")

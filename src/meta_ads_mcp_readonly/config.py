@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
+import hmac
 import os
 
 
@@ -43,16 +45,30 @@ def parse_int_setting(raw_value: str, setting_name: str) -> int:
         ) from exc
 
 
+def parse_bool_setting(raw_value: str, setting_name: str) -> bool:
+    value = str(raw_value or "").strip().lower()
+    if value in {"", "0", "false", "no", "off"}:
+        return False
+    if value in {"1", "true", "yes", "on"}:
+        return True
+    raise ValueError(
+        f"{setting_name} must be a valid boolean, got {raw_value!r}"
+    )
+
+
 @dataclass(frozen=True)
 class Settings:
     meta_access_token: str
     meta_app_secret: str
     meta_api_version: str
     allowed_ad_accounts: tuple[str, ...]
+    unsafe_allow_all_ad_accounts: bool
     request_timeout_seconds: float
     max_retries: int
     retry_backoff_seconds: float
     log_format: str
+    http_bearer_token: str
+    unsafe_allow_unauthenticated_http: bool
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -69,6 +85,14 @@ class Settings:
             "META_RETRY_BACKOFF_SECONDS",
         )
         log_format = os.getenv("META_LOG_FORMAT", "json").strip().lower() or "json"
+        unsafe_allow_all_ad_accounts = parse_bool_setting(
+            os.getenv("META_UNSAFE_ALLOW_ALL_AD_ACCOUNTS", "false"),
+            "META_UNSAFE_ALLOW_ALL_AD_ACCOUNTS",
+        )
+        unsafe_allow_unauthenticated_http = parse_bool_setting(
+            os.getenv("META_UNSAFE_ALLOW_UNAUTHENTICATED_HTTP", "false"),
+            "META_UNSAFE_ALLOW_UNAUTHENTICATED_HTTP",
+        )
 
         return cls(
             meta_access_token=os.getenv("META_ACCESS_TOKEN", "").strip(),
@@ -77,11 +101,24 @@ class Settings:
             allowed_ad_accounts=parse_account_allowlist(
                 os.getenv("META_ALLOWED_AD_ACCOUNTS", "")
             ),
+            unsafe_allow_all_ad_accounts=unsafe_allow_all_ad_accounts,
             request_timeout_seconds=request_timeout_seconds,
             max_retries=max_retries,
             retry_backoff_seconds=retry_backoff_seconds,
             log_format=log_format,
+            http_bearer_token=os.getenv("META_HTTP_BEARER_TOKEN", "").strip(),
+            unsafe_allow_unauthenticated_http=unsafe_allow_unauthenticated_http,
         )
+
+    def build_appsecret_proof(self) -> str | None:
+        if not self.meta_app_secret or not self.meta_access_token:
+            return None
+
+        return hmac.new(
+            self.meta_app_secret.encode("utf-8"),
+            self.meta_access_token.encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
 
     def validate(self) -> None:
         """Validate settings and raise ValueError for invalid configuration."""
@@ -89,6 +126,11 @@ class Settings:
             raise ValueError(
                 "META_ACCESS_TOKEN is required and cannot be empty. "
                 "Set it in your environment or .env file."
+            )
+        if not self.allowed_ad_accounts and not self.unsafe_allow_all_ad_accounts:
+            raise ValueError(
+                "META_ALLOWED_AD_ACCOUNTS is required unless "
+                "META_UNSAFE_ALLOW_ALL_AD_ACCOUNTS=true"
             )
         if not self.meta_api_version.startswith("v"):
             raise ValueError(
@@ -112,4 +154,9 @@ class Settings:
             raise ValueError(
                 "META_LOG_FORMAT must be one of: json, plain, "
                 f"got {self.log_format!r}"
+            )
+        if self.http_bearer_token and self.unsafe_allow_unauthenticated_http:
+            raise ValueError(
+                "Use either META_HTTP_BEARER_TOKEN or "
+                "META_UNSAFE_ALLOW_UNAUTHENTICATED_HTTP=true, not both"
             )

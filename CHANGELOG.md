@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- `META_ALLOWED_AD_ACCOUNTS` agora e obrigatorio por default; uso sem escopo exige `META_UNSAFE_ALLOW_ALL_AD_ACCOUNTS=true`.
+- `streamable-http` agora exige `META_HTTP_BEARER_TOKEN` por default; o bypass sem auth so existe com `META_UNSAFE_ALLOW_UNAUTHENTICATED_HTTP=true` em loopback.
+- `appsecret_proof` agora e redigido junto com `access_token` em logs, erros e URLs sanitizadas.
+
+### Added
+
+- Testes para os novos gates de config e para a sanitizacao de `appsecret_proof`.
+- Smoke test HTTP cobrindo request sem bearer e request autorizada.
+
 ## 0.1.0 - 2026-04-08
 
 Initial validated read-only release candidate.

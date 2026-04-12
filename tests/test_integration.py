@@ -21,6 +21,7 @@ def build_test_env() -> dict[str, str]:
     env["PYTHONPATH"] = pythonpath
     env["PYTHONUNBUFFERED"] = "1"
     env["META_ACCESS_TOKEN"] = "dummy-token"
+    env["META_ALLOWED_AD_ACCOUNTS"] = "act_123"
     return env
 
 
@@ -31,9 +32,12 @@ def get_free_port() -> int:
 
 
 class TransportIntegrationTest(unittest.TestCase):
-    def test_streamable_http_starts_and_accepts_requests(self) -> None:
+    def test_streamable_http_rejects_unauthorized_requests_and_accepts_authorized_ones(
+        self,
+    ) -> None:
         port = get_free_port()
         env = build_test_env()
+        env["META_HTTP_BEARER_TOKEN"] = "http-secret"
         process = subprocess.Popen(
             [
                 sys.executable,
@@ -57,16 +61,36 @@ class TransportIntegrationTest(unittest.TestCase):
         try:
             deadline = time.time() + 10
             last_error: Exception | None = None
+            unauthorized_status: int | None = None
+            authorized_status: int | None = None
             while time.time() < deadline:
                 if process.poll() is not None:
                     break
                 try:
-                    with urllib.request.urlopen(
-                        f"http://127.0.0.1:{port}/", timeout=2
-                    ) as response:
-                        status = response.getcode()
-                    self.assertIn(status, {200, 404, 405})
-                    break
+                    try:
+                        with urllib.request.urlopen(
+                            f"http://127.0.0.1:{port}/", timeout=2
+                        ) as response:
+                            unauthorized_status = response.getcode()
+                    except urllib.error.HTTPError as exc:
+                        unauthorized_status = exc.code
+                        exc.close()
+
+                    request = urllib.request.Request(
+                        f"http://127.0.0.1:{port}/",
+                        headers={"Authorization": "Bearer http-secret"},
+                    )
+                    try:
+                        with urllib.request.urlopen(request, timeout=2) as response:
+                            authorized_status = response.getcode()
+                    except urllib.error.HTTPError as exc:
+                        authorized_status = exc.code
+                        exc.close()
+
+                    if unauthorized_status is not None and authorized_status is not None:
+                        self.assertEqual(unauthorized_status, 401)
+                        self.assertIn(authorized_status, {200, 404, 405})
+                        break
                 except urllib.error.HTTPError as exc:
                     try:
                         self.assertIn(exc.code, {404, 405})

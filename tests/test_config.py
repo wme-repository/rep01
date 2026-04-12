@@ -14,6 +14,7 @@ from meta_ads_mcp_readonly.config import (
     Settings,
     normalize_ad_account_id,
     parse_account_allowlist,
+    parse_bool_setting,
 )
 
 
@@ -30,6 +31,12 @@ class ConfigHelpersTest(unittest.TestCase):
         )
         self.assertEqual(parse_account_allowlist(""), ())
 
+    def test_parse_bool_setting_accepts_common_values(self) -> None:
+        self.assertTrue(parse_bool_setting("true", "FLAG"))
+        self.assertTrue(parse_bool_setting("1", "FLAG"))
+        self.assertFalse(parse_bool_setting("false", "FLAG"))
+        self.assertFalse(parse_bool_setting("", "FLAG"))
+
 
 class SettingsTest(unittest.TestCase):
     def test_from_env_parses_timeout_and_allowlist(self) -> None:
@@ -42,6 +49,7 @@ class SettingsTest(unittest.TestCase):
                 "META_MAX_RETRIES": "4",
                 "META_RETRY_BACKOFF_SECONDS": "1.5",
                 "META_LOG_FORMAT": "plain",
+                "META_HTTP_BEARER_TOKEN": "http-secret",
             },
             clear=False,
         ):
@@ -53,6 +61,9 @@ class SettingsTest(unittest.TestCase):
         self.assertEqual(settings.max_retries, 4)
         self.assertEqual(settings.retry_backoff_seconds, 1.5)
         self.assertEqual(settings.log_format, "plain")
+        self.assertEqual(settings.http_bearer_token, "http-secret")
+        self.assertFalse(settings.unsafe_allow_all_ad_accounts)
+        self.assertFalse(settings.unsafe_allow_unauthenticated_http)
 
     def test_from_env_rejects_invalid_timeout(self) -> None:
         with patch.dict(
@@ -73,10 +84,13 @@ class SettingsTest(unittest.TestCase):
             meta_app_secret="",
             meta_api_version="v24.0",
             allowed_ad_accounts=(),
+            unsafe_allow_all_ad_accounts=False,
             request_timeout_seconds=30.0,
             max_retries=2,
             retry_backoff_seconds=1.0,
             log_format="json",
+            http_bearer_token="",
+            unsafe_allow_unauthenticated_http=False,
         )
 
         with self.assertRaisesRegex(ValueError, "META_ACCESS_TOKEN is required"):
@@ -88,10 +102,13 @@ class SettingsTest(unittest.TestCase):
             meta_app_secret="",
             meta_api_version="24.0",
             allowed_ad_accounts=(),
+            unsafe_allow_all_ad_accounts=True,
             request_timeout_seconds=30.0,
             max_retries=2,
             retry_backoff_seconds=1.0,
             log_format="json",
+            http_bearer_token="",
+            unsafe_allow_unauthenticated_http=False,
         )
 
         with self.assertRaisesRegex(ValueError, "META_API_VERSION must start with 'v'"):
@@ -103,10 +120,13 @@ class SettingsTest(unittest.TestCase):
             meta_app_secret="",
             meta_api_version="v24.0",
             allowed_ad_accounts=(),
+            unsafe_allow_all_ad_accounts=True,
             request_timeout_seconds=0.0,
             max_retries=2,
             retry_backoff_seconds=1.0,
             log_format="json",
+            http_bearer_token="",
+            unsafe_allow_unauthenticated_http=False,
         )
 
         with self.assertRaisesRegex(
@@ -120,10 +140,13 @@ class SettingsTest(unittest.TestCase):
             meta_app_secret="",
             meta_api_version="v24.0",
             allowed_ad_accounts=(),
+            unsafe_allow_all_ad_accounts=True,
             request_timeout_seconds=30.0,
             max_retries=-1,
             retry_backoff_seconds=1.0,
             log_format="json",
+            http_bearer_token="",
+            unsafe_allow_unauthenticated_http=False,
         )
 
         with self.assertRaisesRegex(
@@ -137,13 +160,71 @@ class SettingsTest(unittest.TestCase):
             meta_app_secret="",
             meta_api_version="v24.0",
             allowed_ad_accounts=(),
+            unsafe_allow_all_ad_accounts=True,
             request_timeout_seconds=30.0,
             max_retries=2,
             retry_backoff_seconds=1.0,
             log_format="xml",
+            http_bearer_token="",
+            unsafe_allow_unauthenticated_http=False,
         )
 
         with self.assertRaisesRegex(
             ValueError, "META_LOG_FORMAT must be one of: json, plain"
         ):
+            settings.validate()
+
+    def test_validate_rejects_empty_allowlist_without_override(self) -> None:
+        settings = Settings(
+            meta_access_token="token",
+            meta_app_secret="",
+            meta_api_version="v24.0",
+            allowed_ad_accounts=(),
+            unsafe_allow_all_ad_accounts=False,
+            request_timeout_seconds=30.0,
+            max_retries=2,
+            retry_backoff_seconds=1.0,
+            log_format="json",
+            http_bearer_token="",
+            unsafe_allow_unauthenticated_http=False,
+        )
+
+        with self.assertRaisesRegex(
+            ValueError, "META_ALLOWED_AD_ACCOUNTS is required unless"
+        ):
+            settings.validate()
+
+    def test_validate_allows_empty_allowlist_with_explicit_override(self) -> None:
+        settings = Settings(
+            meta_access_token="token",
+            meta_app_secret="",
+            meta_api_version="v24.0",
+            allowed_ad_accounts=(),
+            unsafe_allow_all_ad_accounts=True,
+            request_timeout_seconds=30.0,
+            max_retries=2,
+            retry_backoff_seconds=1.0,
+            log_format="json",
+            http_bearer_token="",
+            unsafe_allow_unauthenticated_http=False,
+        )
+
+        settings.validate()
+
+    def test_validate_rejects_conflicting_http_auth_flags(self) -> None:
+        settings = Settings(
+            meta_access_token="token",
+            meta_app_secret="",
+            meta_api_version="v24.0",
+            allowed_ad_accounts=("act_123",),
+            unsafe_allow_all_ad_accounts=False,
+            request_timeout_seconds=30.0,
+            max_retries=2,
+            retry_backoff_seconds=1.0,
+            log_format="json",
+            http_bearer_token="http-secret",
+            unsafe_allow_unauthenticated_http=True,
+        )
+
+        with self.assertRaisesRegex(ValueError, "Use either META_HTTP_BEARER_TOKEN"):
             settings.validate()

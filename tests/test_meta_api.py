@@ -29,10 +29,13 @@ def make_settings(**overrides: object) -> Settings:
         "meta_app_secret": "",
         "meta_api_version": "v24.0",
         "allowed_ad_accounts": ("act_123",),
+        "unsafe_allow_all_ad_accounts": False,
         "request_timeout_seconds": 30.0,
         "max_retries": 2,
         "retry_backoff_seconds": 1.0,
         "log_format": "json",
+        "http_bearer_token": "",
+        "unsafe_allow_unauthenticated_http": False,
     }
     values.update(overrides)
     return Settings(**values)
@@ -282,6 +285,42 @@ class GraphApiClientRetryTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             payload["paging"]["next"],
             "https://graph.facebook.com/v25.0/me/adaccounts?access_token=[REDACTED]&limit=5",
+        )
+
+    async def test_get_redacts_appsecret_proof_from_paging_urls(self) -> None:
+        settings = make_settings(
+            meta_access_token="secret-token",
+            meta_app_secret="app-secret",
+            max_retries=0,
+        )
+        graph_client = GraphApiClient(settings)
+        appsecret_proof = settings.build_appsecret_proof()
+        fake_client = FakeAsyncClient(
+            [
+                FakeResponse(
+                    200,
+                    {
+                        "data": [{"id": "1"}],
+                        "paging": {
+                            "next": (
+                                "https://graph.facebook.com/v25.0/me/adaccounts?"
+                                f"access_token=secret-token&appsecret_proof={appsecret_proof}&limit=5"
+                            )
+                        },
+                    },
+                ),
+            ]
+        )
+
+        with patch(
+            "meta_ads_mcp_readonly.meta_api.httpx.AsyncClient",
+            return_value=fake_client,
+        ):
+            payload = await graph_client.get("me/adaccounts", {"limit": 5})
+
+        self.assertEqual(
+            payload["paging"]["next"],
+            "https://graph.facebook.com/v25.0/me/adaccounts?access_token=[REDACTED]&appsecret_proof=[REDACTED]&limit=5",
         )
 
     async def test_get_retries_on_request_error_then_returns_success(self) -> None:
